@@ -46,5 +46,7 @@ namespace TestProject.BLL_test
             ((Car)vehicles.Where(x => x.id == 3).First()).priceOfEquipment.Should().Be(-20m);
             ((Car)vehicles.Where(x => x.id == 6).First()).priceOfEquipment.Should().Be(30m);
         }
+
+        
     }
 }

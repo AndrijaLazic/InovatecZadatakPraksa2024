@@ -69,7 +69,7 @@ namespace DOMAIN.Models
                         car.price = car.price + startingPrice*0.06m;
                     if(car.carBodyType == CarBodyType.Limuzina)
                         car.price = car.price + startingPrice * 0.07m;
-                    else if(car.carBodyType == CarBodyType.Hečbek && car.kmsDriven > 100000)
+                    else if(car.carBodyType == CarBodyType.Hecbek && car.kmsDriven > 100000)
                         car.price = car.price - startingPrice * 0.03m;
 
                     return car;

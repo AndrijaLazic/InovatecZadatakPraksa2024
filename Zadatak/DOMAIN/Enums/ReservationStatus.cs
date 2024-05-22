@@ -6,16 +6,10 @@ using System.Threading.Tasks;
 
 namespace DOMAIN.Enums
 {
-    public enum CarBodyType
+    public enum ReservationStatus
     {
-        Limuzina,
-        Hecbek, 
-        Karavan, 
-        Kupe, 
-        Kabriolet,
-        Minivan, 
-        SUV,
-        Pickup,
+        AppointmentAlreadyTaken,
+        Success,
         Undefined
     }
 }

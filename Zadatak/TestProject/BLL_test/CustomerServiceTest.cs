@@ -25,7 +25,14 @@ namespace TestProject.BLL_test
         public void GetCustomers_returnsListOfCustomers()
         {
             List<Customer> customers = _customerService.GetCustomers();
-            customers.Should().HaveCount(6);
+            customers.Should().HaveCount(8);
+        }
+
+        [Fact]
+        public void GetCustomersReservations_returnsListOfCustomers()
+        {
+            List<dynamic> reservations = _customerService.GetCustomersReservations();
+            reservations.Should().HaveCount(10);
         }
     }
 }

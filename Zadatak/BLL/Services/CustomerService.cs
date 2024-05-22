@@ -14,13 +14,14 @@ namespace BLL.Services
         private CSVModule _csvModule;
         private Dictionary<int,Customer> _customers;
         private string _fileNameCustomers;
+        private string _fileNameCustomersReservations;
 
-        public CustomerService(CSVModule csvModule, string fileNameCustomers, string fileNameCustomersWhishList)
+        public CustomerService(CSVModule csvModule, string fileNameCustomers, string fileNameCustomersReservations)
         {
             _csvModule = csvModule;
             _customers = new Dictionary<int,Customer>();
             _fileNameCustomers = fileNameCustomers;
-
+            _fileNameCustomersReservations = fileNameCustomersReservations;
             LoadCustomers();
         }
         
@@ -39,6 +40,10 @@ namespace BLL.Services
         public List<Customer> GetCustomers()
         {
             return _customers.Values.ToList();
+        }
+
+        public List<dynamic> GetCustomersReservations() {
+            return _csvModule.ReadFile(_fileNameCustomersReservations);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using DAL;
 using DOMAIN.Abstraction;
+using DOMAIN.Enums;
 using DOMAIN.Models;
 using System;
 using System.Collections.Concurrent;
@@ -8,6 +9,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static DOMAIN.Models.VehicleReservation;
 
 namespace BLL.Services
 {
@@ -83,11 +85,6 @@ namespace BLL.Services
             for (int i = 0; i < readVehicles.Count; i++)
             {
                 IVehicle newVehicle = _vehicleFactory.GetVehicle(readVehicles[i]);
-
-                if (newVehicle is Car)
-                {
-                    
-                }
                 _vehicles.TryAdd(newVehicle.id, newVehicle!);
             }
         }
@@ -118,6 +115,30 @@ namespace BLL.Services
             {
                 VehicleEquipment newEquipment = VehicleEquipment.GetVehicleEquipment(readEquipments[i]);
                 _equipment.TryAdd(newEquipment.id, newEquipment!);
+            }
+        }
+
+        public void RentVehicle(Reservation reservation, int vehicleID)
+        {
+            DateTime currentDateTime = DateTime.Now;
+            
+
+            _vehicles.TryGetValue(vehicleID, out IVehicle? wantedVehicle);
+            if (wantedVehicle == null)
+                throw new Exception("Vehicle with id:" + vehicleID + " doesn`t exist");
+
+            decimal realPrice = wantedVehicle.GetTotalPrice() * reservation.customer.GetDiscount();
+            
+            if (realPrice > reservation.customer.cashAssets)
+                throw new Exception("User:" + reservation.customer.name +" "+ reservation.customer.lastName + " doesn`t have enought cash assets(" + reservation.customer.cashAssets + "/" + realPrice + ")");
+
+            reservation.price=realPrice;
+
+            _vehiclesLocks.TryGetValue(wantedVehicle.id, out object? vehicleLock);
+            lock (vehicleLock!)
+            {
+                reservation.timeOfOrder=currentDateTime;
+                wantedVehicle.reservation.addReservation(reservation);
             }
         }
     }

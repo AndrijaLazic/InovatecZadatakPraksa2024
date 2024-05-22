@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DOMAIN.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,5 +16,7 @@ namespace DOMAIN.Abstraction
         public string? model { get; set; }
 
         public virtual decimal GetTotalPrice() { return price; }
+
+        public VehicleReservation reservation { get; set; } = new VehicleReservation();
     }
 }
