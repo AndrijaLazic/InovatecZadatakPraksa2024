@@ -22,8 +22,8 @@ CsvConfiguration csvConfiguration = new CsvConfiguration(CultureInfo.InvariantCu
 };
 CSVModule module = new CSVModule(appConfig, csvConfiguration);
 VehicleFactory vehicleFactory = new VehicleFactory();
-VehicleService vehicleService = new VehicleService(module, vehicleFactory, "vozila.csv", "oprema.csv", "vozilo_oprema.csv");
-CustomerService customerService = new CustomerService(module, "kupci.csv", "zahtevi_za_rezervacije.csv", "rezervacije.csv");
+CustomerService customerService = new CustomerService(module, appConfig);
+VehicleService vehicleService = new VehicleService(module, vehicleFactory, appConfig, customerService);
 
 List<Customer> customers = customerService.GetCustomers();
 
@@ -33,22 +33,9 @@ ILogger logger = new LoggerConfiguration()
             .CreateLogger();
 
 
-List<dynamic> newReservations = customerService.GetNewCustomersReservations();
-List<dynamic> oldReservationsCSV = customerService.GetOldCustomersReservations();
+List<dynamic> newReservations = vehicleService.GetNewCustomersReservations();
 
-//loading old reservations
-for (int i=0; i< oldReservationsCSV.Count; i++)
-{
-    Customer customer = customers.Where(x => x.id == int.Parse(oldReservationsCSV[i].KupacId)).First();
-    Reservation currentReservation = new Reservation()
-    {
-        customer = customer,
-        EndDate = DateTime.Parse(oldReservationsCSV[i].KrajRezervacije),
-        StartDate = DateTime.Parse(oldReservationsCSV[i].PocetakRezervacije),
-    };
-    IVehicle currentVehicle = vehicleService.GetVehicle(int.Parse(oldReservationsCSV[i].VoziloId));
-    currentVehicle.reservation.AddOldReservation(currentReservation);
-}
+
 
 
 //log all customer and vehicle data
@@ -96,19 +83,9 @@ List<IVehicle> vehicles = vehicleService.GetVehicles();
 
 for (int i = 0; i < vehicles.Count; i++)
 {
-    if (vehicles[i].id == 4)
-    {
-
-    }
     List<Reservation> allReservations = vehicles[i].reservation.getReservations();
-    List<Reservation> oldVehiclesReservations = vehicles[i].reservation.GetOldReservations();
     for (int j = 0; j < allReservations.Count; j++)
     {
-        if (oldVehiclesReservations.Contains(allReservations[j]))
-        {
-            continue;
-        }
-
         if (allReservations[j].status == ReservationStatus.Success)
         {
             successfullReservations.Add(ReservationToWrite.ConvertReservation(allReservations[j], vehicles[i].id));

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Dynamic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,22 +21,30 @@ namespace BLL.Services
         private string _fileNameVehicles;
         private string _fileNameEquipment;
         private string _fileNameVehicleEquipment;
+        private string _fileNameNewCustomersReservations;
+        private string _fileNameOldCustomersReservations;
         private Dictionary<int, IVehicle> _vehicles;
         private Dictionary<int, VehicleEquipment> _equipment;
         private Dictionary<int, object> _vehiclesLocks;
+        private ICustomerService _customerService;
 
-        public VehicleService(CSVModule csvModule, VehicleFactory vehicleFactory, string fileNameVehicles, string fileNameEquipment, string fileNameVehicleEquipment)
+        private List<dynamic> oldReservationsCSV;
+
+        public VehicleService(CSVModule csvModule, VehicleFactory vehicleFactory, AppConfig appConfig, ICustomerService customerService)
         {
 
             _csvModule = csvModule;
             _vehicleFactory = vehicleFactory;
-            _fileNameVehicles = fileNameVehicles;
-            _fileNameEquipment = fileNameEquipment;
-            _fileNameVehicleEquipment = fileNameVehicleEquipment;
+            _fileNameVehicles = appConfig.csvConfig.fileNameVehicles;
+            _fileNameEquipment = appConfig.csvConfig.fileNameEquipment;
+            _fileNameVehicleEquipment = appConfig.csvConfig.fileNameVehicleEquipment;
+            _fileNameOldCustomersReservations = appConfig.csvConfig.fileNameOldCustomersReservations;
+            _fileNameNewCustomersReservations = appConfig.csvConfig.fileNameNewCustomersReservations;
             _vehicles = new Dictionary<int, IVehicle>();
             _equipment = new Dictionary<int, VehicleEquipment>();
+            _customerService=customerService;
 
-            Task[] tasks = new Task[2]
+            Task[] tasks = new Task[3]
             {
                 Task.Run(() =>
                 {
@@ -44,19 +53,27 @@ namespace BLL.Services
                 Task.Run(() =>
                 {
                     LoadEquipment();
+                }),
+                Task.Run(() =>
+                {
+                    LoadOldReservationsFromFile();
                 })
             };
             Task.WaitAll(tasks);
             AddEquipmentToVehicles();
+            LoadOldReservationsIntoVehicles();
+
+
 
             List<IVehicle> vehicles = _vehicles.Values.ToList();
             _vehiclesLocks = new Dictionary<int, object>();
             for (int i = 0; i < vehicles.Count; i++)
             {
                 _vehiclesLocks.Add(vehicles[i].id, new object());
-                if (vehicles[i] is Car) {
+                if (vehicles[i] is Car)
+                {
                     Car currentCar = ((Car)vehicles[i]);
-                    for(int j = 0; j < currentCar.equipment.Count; j++)
+                    for (int j = 0; j < currentCar.equipment.Count; j++)
                     {
                         if (currentCar.equipment[j].increasesPrice)
                         {
@@ -67,6 +84,7 @@ namespace BLL.Services
                     }
                 }
             }
+            _customerService = customerService;
         }
 
         public List<IVehicle> GetVehicles()
@@ -140,6 +158,47 @@ namespace BLL.Services
         {
             _vehicles.TryGetValue(vehicleID,out IVehicle? vehicle);
             return vehicle;
+        }
+
+        public List<dynamic> GetNewCustomersReservations()
+        {
+            List<dynamic> reservations = _csvModule.ReadFile(_fileNameNewCustomersReservations);
+            for (int i = 0; i < reservations.Count; i++)
+            {
+                dynamic expando = new ExpandoObject();
+                expando.VoziloId = reservations[i].VoziloId;
+                expando.KupacId = reservations[i].KupacId;
+                expando.DatumDolaska = DateTime.Parse(reservations[i].DatumDolaska).ToString("dd/MM/yyyy");
+                expando.PocetakRezervacije = DateTime.Parse(reservations[i].PocetakRezervacije).ToString("dd/MM/yyyy");
+                DateTime finnishDate = DateTime.Parse(reservations[i].PocetakRezervacije);
+                finnishDate = finnishDate.AddDays(int.Parse(reservations[i].BrojDana));
+                expando.KrajRezervacije = finnishDate.ToString("dd/MM/yyyy");
+                reservations[i] = expando;
+            }
+            return reservations;
+        }
+
+        private void LoadOldReservationsFromFile()
+        {
+            oldReservationsCSV= _csvModule.ReadFile(_fileNameOldCustomersReservations);
+        }
+
+        private void LoadOldReservationsIntoVehicles()
+        {
+            List<Customer> customers = _customerService.GetCustomers();
+
+            for (int i = 0; i < oldReservationsCSV.Count; i++)
+            {
+                Customer customer = _customerService.GetCustomerById(int.Parse(oldReservationsCSV[i].KupacId));
+                IVehicle currentVehicle = this.GetVehicle(int.Parse(oldReservationsCSV[i].VoziloId));
+                Reservation currentReservation = new Reservation()
+                {
+                    customer = customer,
+                    EndDate = DateTime.Parse(oldReservationsCSV[i].KrajRezervacije),
+                    StartDate = DateTime.Parse(oldReservationsCSV[i].PocetakRezervacije),
+                };
+                currentVehicle.reservation.AddOldReservation(currentReservation);
+            }
         }
     }
 }

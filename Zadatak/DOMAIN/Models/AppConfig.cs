@@ -14,5 +14,11 @@ namespace DOMAIN.Models
     {
         public string Delimiter { get; set; }
         public string fileDirectory { get; set; }
+        public string fileNameVehicles { get; set; }
+        public string fileNameEquipment { get; set; }
+        public string fileNameVehicleEquipment { get; set; }
+        public string fileNameNewCustomersReservations { get; set; }
+        public string fileNameOldCustomersReservations { get; set; }
+        public string fileNameCustomers { get; set; }
     }
 }

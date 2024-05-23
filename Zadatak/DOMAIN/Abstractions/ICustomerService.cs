@@ -10,9 +10,6 @@ namespace DOMAIN.Abstraction
     public interface ICustomerService
     {
         public List<Customer> GetCustomers();
-        public List<dynamic> GetNewCustomersReservations();
-
-        public List<dynamic> GetOldCustomersReservations();
-        
+        public Customer GetCustomerById(int id);
     }
 }

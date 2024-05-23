@@ -22,19 +22,21 @@ namespace TestProject.MAIN_test
         public MainTest()
         {
             CSVModuleTest cSVModuleTest = new CSVModuleTest();
-            _vehicleService = new VehicleService(cSVModuleTest.csvModule, new VehicleFactory(), "vozila.csv", "oprema.csv", "vozilo_oprema.csv");
-            _customerService = new CustomerService(cSVModuleTest.csvModule, "kupci.csv", "zahtevi_za_rezervacije.csv", "rezervacije.csv");
+            _customerService = new CustomerService(cSVModuleTest.csvModule, cSVModuleTest.appConfig);
+            _vehicleService = new VehicleService(cSVModuleTest.csvModule, new VehicleFactory(), cSVModuleTest.appConfig, _customerService);
+
         }
 
         [Fact]
         public void RentVehicle()
         {
-            List<dynamic> reservations = _customerService.GetNewCustomersReservations();
-            List<Customer> customers = _customerService.GetCustomers();
-            DateTime currentTime = DateTime.Now;
+            dynamic cashAssetsUser7 = _customerService.GetCustomerById(7).cashAssets;
+
+
+            List<dynamic> reservations = _vehicleService.GetNewCustomersReservations();
             for (int i = 0; i < reservations.Count; i++)
             {
-                Customer currentCustomer = customers.Where(x => x.id == int.Parse(reservations[i].KupacId)).First();
+                Customer currentCustomer = _customerService.GetCustomerById(int.Parse(reservations[i].KupacId));
 
                 Reservation reservation = new Reservation()
                 {
@@ -56,12 +58,14 @@ namespace TestProject.MAIN_test
 
             List<IVehicle> vehicles = _vehicleService.GetVehicles();
     
-            vehicles.Where(x=>x.id==4).First().reservation.getReservations().Where(x=>x.status==ReservationStatus.Success).Count().Should().Be(3);
+            vehicles.Where(x=>x.id==4).First().reservation.getReservations().Where(x=>x.status==ReservationStatus.Success).Count().Should().Be(2);
             vehicles.Where(x => x.id == 2).First().reservation.getReservations().Where(x => x.status == ReservationStatus.Success).Count().Should().Be(2);
-            vehicles.Where(x => x.id == 6).First().reservation.getReservations().Where(x => x.status == ReservationStatus.Success).Count().Should().Be(1);
 
-            customers.Where(x => x.id == 7).First().cashAssets.Should().Be(14m);
-            customers.Where(x => x.id == 8).First().cashAssets.Should().Be(190m);
+            List<Reservation> vehicle6Reservations = vehicles.Where(x => x.id == 6).First().reservation.getReservations();
+            vehicle6Reservations.Where(x => x.status == ReservationStatus.Success).Count().Should().Be(1);
+
+            _customerService.GetCustomerById(7).cashAssets.Should().Be(cashAssetsUser7- vehicle6Reservations.Where(x=>x.customer.id==7).First().price);
+            _customerService.GetCustomerById(8).cashAssets.Should().Be(190m);
         }
     }
 }

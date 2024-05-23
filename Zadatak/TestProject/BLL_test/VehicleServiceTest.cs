@@ -10,11 +10,12 @@ namespace TestProject.BLL_test
     public class VehicleServiceTest
     {
         private VehicleService _vehicleService;
-
+        private CustomerService _customerService;
         public VehicleServiceTest()
         {
             CSVModuleTest cSVModuleTest = new CSVModuleTest();
-            _vehicleService = new VehicleService(cSVModuleTest.csvModule, new VehicleFactory(), "vozila.csv", "oprema.csv", "vozilo_oprema.csv");
+            _customerService = new CustomerService(cSVModuleTest.csvModule, cSVModuleTest.appConfig);
+            _vehicleService = new VehicleService(cSVModuleTest.csvModule, new VehicleFactory(), cSVModuleTest.appConfig, _customerService);
         }
 
         [Fact]

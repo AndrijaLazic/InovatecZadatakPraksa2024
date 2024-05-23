@@ -15,15 +15,11 @@ namespace BLL.Services
         private CSVModule _csvModule;
         private Dictionary<int,Customer> _customers;
         private string _fileNameCustomers;
-        private string _fileNameNewCustomersReservations;
-        private string _fileNameOldCustomersReservations;
 
-        public CustomerService(CSVModule csvModule, string fileNameCustomers, string fileNameNewCustomersReservations, string fileNameOldCustomersReservations)
+        public CustomerService(CSVModule csvModule, AppConfig appConfig)
         {
             _csvModule = csvModule;
-            _fileNameCustomers = fileNameCustomers;
-            _fileNameNewCustomersReservations = fileNameNewCustomersReservations;
-            _fileNameOldCustomersReservations = fileNameOldCustomersReservations;
+            _fileNameCustomers = appConfig.csvConfig.fileNameCustomers;
             _customers= new Dictionary<int,Customer>();
             LoadCustomers();
         }
@@ -45,26 +41,10 @@ namespace BLL.Services
             return _customers.Values.ToList();
         }
 
-        public List<dynamic> GetNewCustomersReservations() {
-            List<dynamic> reservations = _csvModule.ReadFile(_fileNameNewCustomersReservations);
-            for(int i = 0; i < reservations.Count; i++)
-            {
-                dynamic expando = new ExpandoObject();
-                expando.VoziloId = reservations[i].VoziloId;
-                expando.KupacId= reservations[i].KupacId;
-                expando.DatumDolaska = DateTime.Parse(reservations[i].DatumDolaska).ToString("dd/MM/yyyy");
-                expando.PocetakRezervacije = DateTime.Parse(reservations[i].PocetakRezervacije).ToString("dd/MM/yyyy");
-                DateTime finnishDate= DateTime.Parse(reservations[i].PocetakRezervacije);
-                finnishDate = finnishDate.AddDays(int.Parse(reservations[i].BrojDana));
-                expando.KrajRezervacije= finnishDate.ToString("dd/MM/yyyy");
-                reservations[i]= expando;
-            }
-            return  reservations;
-        }
-
-        public List<dynamic> GetOldCustomersReservations()
+        public Customer GetCustomerById(int id)
         {
-            return _csvModule.ReadFile(_fileNameOldCustomersReservations);
+            return _customers[id];
         }
+        
     }
 }

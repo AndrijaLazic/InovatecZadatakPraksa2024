@@ -52,9 +52,14 @@ namespace DOMAIN.Models
             }
         }
 
+
+        /// <summary>
+        /// All valid reservations get appointed and new reservations get returned
+        /// </summary>
         public List<Reservation> getReservations()
         {
             List<Reservation> allReservations=new List<Reservation>(oldReservations);
+            int numberOfOldReservations=oldReservations.Count;
             for (int i = 0; i< vipCustomers.Count; i++)
             {
                 bool isValid = true;
@@ -134,7 +139,7 @@ namespace DOMAIN.Models
                 }
                 allReservations.Add(normalCustomers[i]);
             }
-            return allReservations;
+            return allReservations.Skip(numberOfOldReservations).ToList();
         }
 
         private bool isDateInRange(DateTime date, DateTime range1, DateTime range2)

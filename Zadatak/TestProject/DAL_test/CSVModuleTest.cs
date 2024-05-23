@@ -11,7 +11,7 @@ namespace TestProject.DAL_test
     public class CSVModuleTest
     {
         public string filename = "vozila.csv";
-        AppConfig appConfig;
+        public AppConfig appConfig;
         CsvConfiguration csvConfiguration;
         public CSVModule csvModule;
         public CSVModuleTest()

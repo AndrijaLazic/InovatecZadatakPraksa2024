@@ -12,7 +12,7 @@ namespace DOMAIN.Abstraction
     {
         public List<IVehicle> GetVehicles();
         public void RentVehicle(Reservation reservation, int vehicleID);
-
         public IVehicle? GetVehicle(int vehicleID);
+        public List<dynamic> GetNewCustomersReservations();
     }
 }
