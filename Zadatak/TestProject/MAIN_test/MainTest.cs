@@ -23,13 +23,13 @@ namespace TestProject.MAIN_test
         {
             CSVModuleTest cSVModuleTest = new CSVModuleTest();
             _vehicleService = new VehicleService(cSVModuleTest.csvModule, new VehicleFactory(), "vozila.csv", "oprema.csv", "vozilo_oprema.csv");
-            _customerService = new CustomerService(cSVModuleTest.csvModule, "kupci.csv", "rezervacije.csv");
+            _customerService = new CustomerService(cSVModuleTest.csvModule, "kupci.csv", "zahtevi_za_rezervacije.csv", "rezervacije.csv");
         }
 
         [Fact]
         public void RentVehicle()
         {
-            List<dynamic> reservations = _customerService.GetCustomersReservations();
+            List<dynamic> reservations = _customerService.GetNewCustomersReservations();
             List<Customer> customers = _customerService.GetCustomers();
             DateTime currentTime = DateTime.Now;
             for (int i = 0; i < reservations.Count; i++)
@@ -38,7 +38,7 @@ namespace TestProject.MAIN_test
 
                 Reservation reservation = new Reservation()
                 {
-                    timeOfOrder = currentTime,
+                    timeOfOrder = DateTime.Parse(reservations[i].DatumDolaska),
                     customer = currentCustomer,
                     EndDate = DateTime.Parse(reservations[i].KrajRezervacije),
                     StartDate = DateTime.Parse(reservations[i].PocetakRezervacije)

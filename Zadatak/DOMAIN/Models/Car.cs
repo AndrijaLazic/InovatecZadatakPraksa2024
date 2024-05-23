@@ -19,5 +19,10 @@ namespace DOMAIN.Models
         {
             return this.price + this.priceOfEquipment;
         }
+
+        public override string ToString()
+        {
+            return base.ToString() + " price:"+ GetTotalPrice() + " kmsDriven:" + this.kmsDriven + " carBodyType:" + this.carBodyType.ToString();
+        }
     }
 }

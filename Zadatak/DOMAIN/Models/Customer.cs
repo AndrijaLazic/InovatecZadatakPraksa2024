@@ -1,4 +1,5 @@
-﻿using DOMAIN.Enums;
+﻿using CsvHelper.Configuration.Attributes;
+using DOMAIN.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,10 +13,15 @@ namespace DOMAIN.Models
 {
     public class Customer
     {
+        [Name("Id")]
         public int id { get; set; }
+        [Name("Ime")]
         public string? name { get; set; }
+        [Name("Prezime")]
         public string? lastName { get; set; }
+        [Name("Budzet")]
         public decimal cashAssets { get; set; }
+        [Name("Clanarina")]
         public MembershipType membershipType { get; set; }
 
         public decimal GetDiscount()
@@ -31,6 +37,19 @@ namespace DOMAIN.Models
             }
         }
 
+        public string GetDiscountPercent()
+        {
+            switch (membershipType)
+            {
+                case MembershipType.VIP:
+                    return "20%";
+                case MembershipType.Basic:
+                    return "10%";
+                default:
+                    return "0%";
+            }
+        }
+
         public static Customer GetCustomer(dynamic dynamicCustomer)
         {
             Customer customer = new Customer()
@@ -39,9 +58,14 @@ namespace DOMAIN.Models
                 name = dynamicCustomer.Ime,
                 cashAssets = decimal.Parse(dynamicCustomer.Budzet),
                 lastName = dynamicCustomer.Prezime,
-                membershipType = Enum.IsDefined(typeof(MembershipType), dynamicCustomer.Clanarina) ? Enum.Parse(typeof(MembershipType), dynamicCustomer.Clanarina) : MembershipType.Undefined
+                membershipType = Enum.IsDefined(typeof(MembershipType), dynamicCustomer.Clanarina) ? Enum.Parse(typeof(MembershipType), dynamicCustomer.Clanarina) : MembershipType.None
             };
             return customer;
+        }
+
+        public override string ToString()
+        {
+            return name + " " + lastName + " cashAssets:" + cashAssets + " membershipType: " + membershipType.ToString() + " discount: " + GetDiscountPercent();
         }
     }
 }

@@ -13,5 +13,10 @@ namespace DOMAIN.Models
         public int engineVolume { get; set; }
         public int enginePower { get; set; }
         public MotorcycleType type { get; set; }
+
+        public override string ToString()
+        {
+            return base.ToString() + " price:"+GetTotalPrice()+ " engineVolume:"+ engineVolume + " enginePower:"+ enginePower+ " type:" + type.ToString();
+        }
     }
 }

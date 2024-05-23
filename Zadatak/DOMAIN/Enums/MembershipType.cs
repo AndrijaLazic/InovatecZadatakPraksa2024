@@ -10,6 +10,6 @@ namespace DOMAIN.Enums
     {
         VIP,
         Basic,
-        Undefined
+        None
     }
 }

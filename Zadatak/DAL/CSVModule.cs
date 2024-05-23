@@ -24,7 +24,7 @@ namespace DAL
 
         public List<dynamic> ReadFile(string filename)
         {
-            List<dynamic> records = null;
+            List<dynamic> ?records = null;
 
             using (var reader = new StreamReader(_appConfig.csvConfig.fileDirectory + "/" + filename))
             using (var csv = new CsvReader(reader, _csvConfiguration))

@@ -18,20 +18,20 @@ namespace TestProject.BLL_test
         public CustomerServiceTest()
         {
             CSVModuleTest cSVModuleTest = new CSVModuleTest();
-            _customerService = new CustomerService(cSVModuleTest.csvModule, "kupci.csv", "rezervacije.csv");
+            _customerService = new CustomerService(cSVModuleTest.csvModule, "kupci.csv", "zahtevi_za_rezervacije.csv", "rezervacije.csv");
         }
 
         [Fact]
         public void GetCustomers_returnsListOfCustomers()
         {
             List<Customer> customers = _customerService.GetCustomers();
-            customers.Should().HaveCount(8);
+            customers.Should().HaveCount(9);
         }
 
         [Fact]
         public void GetCustomersReservations_returnsListOfCustomers()
         {
-            List<dynamic> reservations = _customerService.GetCustomersReservations();
+            List<dynamic> reservations = _customerService.GetNewCustomersReservations();
             reservations.Should().HaveCount(10);
         }
     }

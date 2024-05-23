@@ -67,9 +67,6 @@ namespace BLL.Services
                     }
                 }
             }
-
-            
-
         }
 
         public List<IVehicle> GetVehicles()
@@ -85,6 +82,7 @@ namespace BLL.Services
             for (int i = 0; i < readVehicles.Count; i++)
             {
                 IVehicle newVehicle = _vehicleFactory.GetVehicle(readVehicles[i]);
+                newVehicle.GetTotalPrice();
                 _vehicles.TryAdd(newVehicle.id, newVehicle!);
             }
         }
@@ -120,9 +118,6 @@ namespace BLL.Services
 
         public void RentVehicle(Reservation reservation, int vehicleID)
         {
-            DateTime currentDateTime = DateTime.Now;
-            
-
             _vehicles.TryGetValue(vehicleID, out IVehicle? wantedVehicle);
             if (wantedVehicle == null)
                 throw new Exception("Vehicle with id:" + vehicleID + " doesn`t exist");
@@ -137,9 +132,14 @@ namespace BLL.Services
             _vehiclesLocks.TryGetValue(wantedVehicle.id, out object? vehicleLock);
             lock (vehicleLock!)
             {
-                reservation.timeOfOrder=currentDateTime;
                 wantedVehicle.reservation.addReservation(reservation);
             }
+        }
+
+        public IVehicle? GetVehicle(int vehicleID)
+        {
+            _vehicles.TryGetValue(vehicleID,out IVehicle? vehicle);
+            return vehicle;
         }
     }
 }

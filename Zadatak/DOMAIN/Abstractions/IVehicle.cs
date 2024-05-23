@@ -18,5 +18,10 @@ namespace DOMAIN.Abstraction
         public virtual decimal GetTotalPrice() { return price; }
 
         public VehicleReservation reservation { get; set; } = new VehicleReservation();
+
+        public override string ToString()
+        {
+            return " id:" + id + " producer:" + producer + " fuelConsumption:" + fuelConsumption + " model:" + model;
+        }
     }
 }

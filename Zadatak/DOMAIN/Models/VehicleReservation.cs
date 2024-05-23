@@ -14,7 +14,7 @@ namespace DOMAIN.Models
         private List<Reservation> vipCustomers = new List<Reservation>();
         private List<Reservation> basicCustomers = new List<Reservation>();
         private List<Reservation> normalCustomers = new List<Reservation>();
-
+        private List<Reservation> oldReservations = new List<Reservation>();
         public void addReservation(Reservation reservation)
         {
             switch (reservation.customer.membershipType)
@@ -54,7 +54,7 @@ namespace DOMAIN.Models
 
         public List<Reservation> getReservations()
         {
-            List<Reservation> allReservations=new List<Reservation>();
+            List<Reservation> allReservations=new List<Reservation>(oldReservations);
             for (int i = 0; i< vipCustomers.Count; i++)
             {
                 bool isValid = true;
@@ -140,6 +140,16 @@ namespace DOMAIN.Models
         private bool isDateInRange(DateTime date, DateTime range1, DateTime range2)
         {
             return date >= range1 && date <= range2;
+        }
+
+        public void AddOldReservation(Reservation reservations)
+        {
+            oldReservations.Add(reservations);
+        }
+
+        public List<Reservation> GetOldReservations()
+        {
+            return oldReservations;
         }
     }
 }
