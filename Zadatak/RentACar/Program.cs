@@ -41,14 +41,21 @@ List<dynamic> newReservations = vehicleService.GetNewCustomersReservations();
 //log all customer and vehicle data
 for (int i = 0; i < customers.Count; i++)
 {
-    dynamic? foundReservation = newReservations.FirstOrDefault(x => int.Parse(x.KupacId) == customers[i].id);
-    if (foundReservation == null)
+    List<dynamic> foundReservation = newReservations.Where(x => int.Parse(x.KupacId) == customers[i].id).ToList();
+    if (foundReservation.Count == 0)
     {
         logger.Information(customers[i].ToString());
         continue;
     }
-    IVehicle wantedVehicle = vehicleService.GetVehicle(int.Parse(foundReservation.VoziloId));
-    logger.Information(customers[i].ToString() +" , i wish to buy vehicle: \n" + wantedVehicle.ToString()+"\n in period of: "+ foundReservation.PocetakRezervacije +" - " + foundReservation.KrajRezervacije+"\n");
+
+    string finnalMessage = "\n\n" + customers[i].ToString() + " , i wish to buy vehicle: \n";
+    for (int j = 0; j < foundReservation.Count; j++)
+    {
+        IVehicle wantedVehicle = vehicleService.GetVehicle(int.Parse(foundReservation[j].VoziloId));
+        finnalMessage = finnalMessage + wantedVehicle.ToString() + "\n in period of: " + foundReservation[j].PocetakRezervacije + " - " + foundReservation[j].KrajRezervacije + "\n\n";
+    }
+
+    logger.Information(finnalMessage);
 }
 
 

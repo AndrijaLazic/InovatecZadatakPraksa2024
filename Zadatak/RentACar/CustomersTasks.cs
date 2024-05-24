@@ -19,31 +19,33 @@ namespace AutoPlac
 
             for (int i = 0; i < customers.Count; i++)
             {
-                dynamic? foundReservation = reservations.FirstOrDefault(x => int.Parse(x.KupacId) == customers[i].id);
-                if(foundReservation!=null)
-                    customerTasks.Add(GetWork(customers[i], foundReservation,  vehicleService));
+                List<dynamic> foundReservation = reservations.Where(x => int.Parse(x.KupacId) == customers[i].id).ToList();
+                if (foundReservation.Count != 0)
+                {
+                     customerTasks.Add(GetWork(customers[i], foundReservation, vehicleService));
+                }
+                    
             }
             return customerTasks;
         }
 
-        private static Task GetWork(Customer customers, dynamic reservation, VehicleService vehicleService)
+        private static Task GetWork(Customer customers, List<dynamic> reservations, VehicleService vehicleService)
         {
             Random rnd = new Random();
             return Task.Run(async () =>
             {
                 await Task.Delay(rnd.Next(0, 2) * 1000);
-                Reservation currentUserReservation = new Reservation()
+                for(int i=0;i< reservations.Count;i++)
                 {
-                    customer = customers,
-                    EndDate = DateTime.Parse(reservation.KrajRezervacije),
-                    StartDate = DateTime.Parse(reservation.PocetakRezervacije),
-                    timeOfOrder = DateTime.Parse(reservation.DatumDolaska)
-                };
-                if(customers.id == 9)
-                {
-
+                    Reservation currentUserReservation = new Reservation()
+                    {
+                        customer = customers,
+                        EndDate = DateTime.Parse(reservations[i].KrajRezervacije),
+                        StartDate = DateTime.Parse(reservations[i].PocetakRezervacije),
+                        timeOfOrder = DateTime.Parse(reservations[i].DatumDolaska)
+                    };
+                    vehicleService.RentVehicle(currentUserReservation, int.Parse(reservations[i].VoziloId));
                 }
-                vehicleService.RentVehicle(currentUserReservation, int.Parse(reservation.VoziloId));
             });
         }
     }
