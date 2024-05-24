@@ -1,13 +1,16 @@
 ﻿using BLL.Services;
 using CsvHelper;
+using DAL;
 using DOMAIN.Abstraction;
 using DOMAIN.Enums;
 using DOMAIN.Models;
 using FluentAssertions;
 using Microsoft.CSharp.RuntimeBinder;
+using Serilog.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using TestProject.DAL_test;
@@ -18,20 +21,19 @@ namespace TestProject.MAIN_test
     {
         private VehicleService _vehicleService;
         private CustomerService _customerService;
+        private CSVModule _csvModule;
 
         public MainTest()
         {
+            
             CSVModuleTest cSVModuleTest = new CSVModuleTest();
+            _csvModule=cSVModuleTest.csvModule;
             _customerService = new CustomerService(cSVModuleTest.csvModule, cSVModuleTest.appConfig);
             _vehicleService = new VehicleService(cSVModuleTest.csvModule, new VehicleFactory(), cSVModuleTest.appConfig, _customerService);
         }
 
-        [Fact]
         public void RentVehicle()
         {
-            dynamic cashAssetsUser7 = _customerService.GetCustomerById(7).cashAssets;
-            dynamic cashAssetsUser8 = _customerService.GetCustomerById(8).cashAssets;
-
             List<dynamic> reservations = _vehicleService.GetNewCustomersReservations();
             for (int i = 0; i < reservations.Count; i++)
             {
@@ -45,6 +47,7 @@ namespace TestProject.MAIN_test
                     StartDate = DateTime.Parse(reservations[i].PocetakRezervacije)
                 };
 
+                //usecase not enough cash at start of request
                 if(currentCustomer.id == 10)
                 {
                     Action action = () => { 
@@ -68,19 +71,57 @@ namespace TestProject.MAIN_test
 
             List<IVehicle> vehicles = _vehicleService.GetVehicles();
 
-            vehicles.Where(x => x.id == 4).First().reservation.getReservations(out List<Reservation> valid4Reservations, out List<Reservation> invalid4Reservations);
-            valid4Reservations.Where(x => x.status == ReservationStatus.Success).Count().Should().Be(3);
+            
+        }
 
-            vehicles.Where(x => x.id == 2).First().reservation.getReservations(out List<Reservation> valid2Reservations, out List<Reservation> invalid2Reservations);
-            valid2Reservations.Where(x => x.status == ReservationStatus.Success).Count().Should().Be(2);
+        public void writeNewReservations()
+        {
+            dynamic cashAssetsUser7 = _customerService.GetCustomerById(7).cashAssets;
+            dynamic cashAssetsUser8 = _customerService.GetCustomerById(8).cashAssets;
+            List<ReservationToWrite> successfullReservations = new List<ReservationToWrite>();
 
+            List<IVehicle> vehicles = _vehicleService.GetVehicles();
 
-            vehicles.Where(x => x.id == 6).First().reservation.getReservations(out List<Reservation> valid6Reservations, out List<Reservation> invalid6Reservations);
+            for (int i = 0; i < vehicles.Count; i++)
+            {
+                vehicles[i].reservation.getReservations(out List<Reservation> validReservations, out List<Reservation> invalidReservations);
+                for (int j = 0; j < validReservations.Count; j++)
+                {
+                    successfullReservations.Add(ReservationToWrite.ConvertReservation(validReservations[j], vehicles[i].id));
+                }
 
-            valid6Reservations.Count().Should().Be(1);
+                switch (vehicles[i].id)
+                {
+                    case 2:
+                        validReservations.Where(x => x.status == ReservationStatus.Success).Count().Should().Be(2);
+                        break;
+                    case 4:
+                        validReservations.Where(x => x.status == ReservationStatus.Success).Count().Should().Be(3);
+                        _customerService.GetCustomerById(8).cashAssets.Should().Be(cashAssetsUser8 - validReservations.Where(x => x.customer.id == 8).First().price);
+                        break;
+                    case 6:
+                        validReservations.Count().Should().Be(1);
+                        _customerService.GetCustomerById(7).cashAssets.Should().Be(cashAssetsUser7 - validReservations.Where(x => x.customer.id == 7).First().price);
+                        break;
+                    default:
+                        // code block
+                        break;
+                }
 
-            _customerService.GetCustomerById(7).cashAssets.Should().Be(cashAssetsUser7- valid6Reservations.Where(x=>x.customer.id==7).First().price);
-            _customerService.GetCustomerById(8).cashAssets.Should().Be(cashAssetsUser8- valid4Reservations.Where(x => x.customer.id == 8).First().price);
+            }
+
+            _csvModule.WriteFile("nove_rezervacije.csv", successfullReservations);
+        }
+
+        [Fact]
+        public void FinalOutput()
+        {
+            RentVehicle();
+            writeNewReservations();
+            List<Reservation> reservations = new List<Reservation>();
+            List<dynamic> readReservations = _csvModule.ReadFile("nove_rezervacije.csv");
+
+            readReservations.Count.Should().Be(9);
         }
     }
 }

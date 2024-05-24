@@ -11,7 +11,7 @@ namespace DOMAIN.Models
 {
     public class VehicleReservation
     {
-        private Dictionary<DateTime, List<Reservation>> reservations = new Dictionary<DateTime, List<Reservation>>();
+        private SortedDictionary<DateTime, List<Reservation>> reservations = new SortedDictionary<DateTime, List<Reservation>>();
         private List<Reservation> oldReservations = new List<Reservation>();
         public void addReservation(Reservation reservation)
         {
@@ -56,8 +56,6 @@ namespace DOMAIN.Models
             validNewReservations = new List<Reservation>();
             invalidNewReservations= new List<Reservation>();
             List<DateTime> dates = reservations.Keys.ToList();
-            int numberOfOldReservations = oldReservations.Count;
-
 
             //itrerate trough all dates
             for (int i = 0; i < dates.Count; i++)
@@ -115,8 +113,6 @@ namespace DOMAIN.Models
                         invalidNewReservations.Add(reservationsForCurrentDate[j]);
                         continue;
                     }
-                    reservationsForCurrentDate[j].status = ReservationStatus.Success;
-
                     dynamic cashAssetsAftherTransaction = reservationsForCurrentDate[j].customer.cashAssets - reservationsForCurrentDate[j].price;
 
                     if (cashAssetsAftherTransaction < 0)
@@ -126,6 +122,7 @@ namespace DOMAIN.Models
                         continue;
                     }
 
+                    reservationsForCurrentDate[j].status = ReservationStatus.Success;
                     reservationsForCurrentDate[j].customer.cashAssets = cashAssetsAftherTransaction;
                     validNewReservations.Add(reservationsForCurrentDate[j]);
                 }

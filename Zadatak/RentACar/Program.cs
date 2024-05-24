@@ -92,10 +92,6 @@ List<IVehicle> vehicles = vehicleService.GetVehicles();
 
 for (int i = 0; i < vehicles.Count; i++)
 {
-    if (vehicles[i].id == 4)
-    {
-
-    }
     vehicles[i].reservation.getReservations(out List<Reservation> validReservations, out List<Reservation> invalidReservations);
     for (int j = 0; j < validReservations.Count; j++)
     {
