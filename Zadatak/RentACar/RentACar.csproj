@@ -9,10 +9,14 @@
 
   <ItemGroup>
     <None Remove="AppConfig.json" />
+    <None Remove="AppConfigDev.json" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="AppConfig.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AppConfigDev.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

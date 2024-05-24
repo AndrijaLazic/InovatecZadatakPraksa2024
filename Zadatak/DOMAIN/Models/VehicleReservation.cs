@@ -11,135 +11,125 @@ namespace DOMAIN.Models
 {
     public class VehicleReservation
     {
-        private List<Reservation> vipCustomers = new List<Reservation>();
-        private List<Reservation> basicCustomers = new List<Reservation>();
-        private List<Reservation> normalCustomers = new List<Reservation>();
+        private Dictionary<DateTime, List<Reservation>> reservations = new Dictionary<DateTime, List<Reservation>>();
         private List<Reservation> oldReservations = new List<Reservation>();
         public void addReservation(Reservation reservation)
         {
-            switch (reservation.customer.membershipType)
+            if(reservations.TryGetValue(reservation.timeOfOrder,out List<Reservation> currentReservations))
             {
-                case MembershipType.VIP:
-                    for (int i = 0; i < vipCustomers.Count; i++)
-                    {
-                        if (reservation.timeOfOrder >= vipCustomers[i].timeOfOrder)
-                            continue;
-                        vipCustomers.Insert(i, reservation);
+                switch (reservation.customer.membershipType)
+                {
+                    case MembershipType.VIP:
+                        for (int i = 0; i < currentReservations.Count; i++)
+                        {
+                            if (currentReservations[i].customer.membershipType == MembershipType.VIP)
+                                continue;
+                            currentReservations.Insert(i, reservation);
+                            return;
+                        }
+                        currentReservations.Add(reservation);
                         return;
-                    }
-                    vipCustomers.Add(reservation);
-                    break;
-                case MembershipType.Basic:
-                    for (int i = 0; i < basicCustomers.Count; i++)
-                    {
-                        if (reservation.timeOfOrder >= basicCustomers[i].timeOfOrder)
-                            continue;
-                        basicCustomers.Insert(i, reservation);
+                    case MembershipType.Basic:
+                        for (int i = 0; i < currentReservations.Count; i++)
+                        {
+                            if (currentReservations[i].customer.membershipType == MembershipType.VIP || currentReservations[i].customer.membershipType == MembershipType.Basic)
+                                continue;
+                            currentReservations.Insert(i, reservation);
+                            return;
+                        }
+                        currentReservations.Add(reservation);
                         return;
-                    }
-                    basicCustomers.Add(reservation);
-                    break;
-                default:
-                    for (int i = 0; i < normalCustomers.Count; i++)
-                    {
-                        if (reservation.timeOfOrder >= normalCustomers[i].timeOfOrder)
-                            continue;
-                        normalCustomers.Insert(i, reservation);
+                    default:
+                        currentReservations.Add(reservation);
                         return;
-                    }
-                    normalCustomers.Add(reservation);
-                    break;
+                }
             }
+            reservations.Add(reservation.timeOfOrder, new List<Reservation>() { reservation });
         }
 
 
         /// <summary>
-        /// All valid reservations get appointed and new reservations get returned
+        /// All valid reservations get appointed and valid/invalid reservations get returned
         /// </summary>
-        public List<Reservation> getReservations()
+        public void getReservations(out List<Reservation> validNewReservations, out List<Reservation> invalidNewReservations)
         {
-            List<Reservation> allReservations=new List<Reservation>(oldReservations);
-            int numberOfOldReservations=oldReservations.Count;
-            for (int i = 0; i< vipCustomers.Count; i++)
+            validNewReservations = new List<Reservation>();
+            invalidNewReservations= new List<Reservation>();
+            List<DateTime> dates = reservations.Keys.ToList();
+            int numberOfOldReservations = oldReservations.Count;
+
+
+            //itrerate trough all dates
+            for (int i = 0; i < dates.Count; i++)
             {
-                bool isValid = true;
-                for (int j = 0; j < allReservations.Count; j++)
-                {
-                    if (this.isDateInRange(vipCustomers[i].StartDate, allReservations[j].StartDate, allReservations[j].EndDate))
-                    {
-                        isValid = false;
-                        vipCustomers[i].status = ReservationStatus.AppointmentAlreadyTaken;
-                        break;
-                    }
-                    else if (this.isDateInRange(vipCustomers[i].EndDate, allReservations[j].StartDate, allReservations[j].EndDate))
-                    {
-                        isValid = false;
-                        vipCustomers[i].status = ReservationStatus.AppointmentAlreadyTaken;
-                        break;
-                    }
-                }
-                if (isValid)
-                {
-                    vipCustomers[i].status= ReservationStatus.Success;
-                    vipCustomers[i].customer.cashAssets = vipCustomers[i].customer.cashAssets - vipCustomers[i].price;
-                }
-                allReservations.Add(vipCustomers[i]);
+                 
+                //iterate trough all reservations for currentDate. Reservations are sorted based on customers membership
+                reservations.TryGetValue(dates[i], out List<Reservation>? reservationsForCurrentDate);
 
+                for (int j = 0; j < reservationsForCurrentDate!.Count; j++)
+                {
+
+
+                    bool isValid = true;
+                    for (int z = 0; z < oldReservations.Count; z++)
+                    {
+                        if (isDateInRange(reservationsForCurrentDate[j].StartDate, oldReservations[z].StartDate, oldReservations[z].EndDate))
+                        {
+                            isValid = false;
+                            reservationsForCurrentDate[j].status = ReservationStatus.AppointmentAlreadyTaken;
+                            break;
+                        }
+                        else if (isDateInRange(reservationsForCurrentDate[j].EndDate, oldReservations[z].StartDate, oldReservations[z].EndDate))
+                        {
+                            isValid = false;
+                            reservationsForCurrentDate[j].status = ReservationStatus.AppointmentAlreadyTaken;
+                            break;
+                        }
+                    }
+
+                    if (!isValid)
+                    {
+                        invalidNewReservations.Add(reservationsForCurrentDate[j]);
+                        continue;
+                    }
+
+                    for (int z = 0; z < validNewReservations.Count; z++)
+                    {
+
+                        if (isDateInRange(reservationsForCurrentDate[j].StartDate, validNewReservations[z].StartDate, validNewReservations[z].EndDate))
+                        {
+                            isValid = false;
+                            reservationsForCurrentDate[j].status = ReservationStatus.AppointmentAlreadyTaken;
+                            break;
+                        }
+                        else if (isDateInRange(reservationsForCurrentDate[j].EndDate, validNewReservations[z].StartDate, validNewReservations[z].EndDate))
+                        {
+                            isValid = false;
+                            reservationsForCurrentDate[j].status = ReservationStatus.AppointmentAlreadyTaken;
+                            break;
+                        }
+                    }
+
+                    if (!isValid)
+                    {
+                        invalidNewReservations.Add(reservationsForCurrentDate[j]);
+                        continue;
+                    }
+                    reservationsForCurrentDate[j].status = ReservationStatus.Success;
+
+                    dynamic cashAssetsAftherTransaction = reservationsForCurrentDate[j].customer.cashAssets - reservationsForCurrentDate[j].price;
+
+                    if (cashAssetsAftherTransaction < 0)
+                    {
+                        reservationsForCurrentDate[j].status = ReservationStatus.NotEnoughCashAssets;
+                        invalidNewReservations.Add(reservationsForCurrentDate[j]);
+                        continue;
+                    }
+
+                    reservationsForCurrentDate[j].customer.cashAssets = cashAssetsAftherTransaction;
+                    validNewReservations.Add(reservationsForCurrentDate[j]);
+                }
             }
-
-            for (int i = 0; i < basicCustomers.Count; i++)
-            {
-                bool isValid = true;
-                for (int j = 0; j < allReservations.Count; j++)
-                {
-                    if (this.isDateInRange(basicCustomers[i].StartDate, allReservations[j].StartDate, allReservations[j].EndDate))
-                    {
-                        isValid = false;
-                        basicCustomers[i].status = ReservationStatus.AppointmentAlreadyTaken;
-                        break;
-                    }
-                    else if (this.isDateInRange(basicCustomers[i].EndDate, allReservations[j].StartDate, allReservations[j].EndDate))
-                    {
-                        isValid = false;
-                        basicCustomers[i].status = ReservationStatus.AppointmentAlreadyTaken;
-                        break;
-                    }
-                }
-                if (isValid)
-                {
-                    basicCustomers[i].status = ReservationStatus.Success;
-                    basicCustomers[i].customer.cashAssets = basicCustomers[i].customer.cashAssets - basicCustomers[i].price;
-                }
-                allReservations.Add(basicCustomers[i]);
-
-            }
-
-            for (int i = 0; i < normalCustomers.Count; i++)
-            {
-                bool isValid = true;
-                for (int j = 0; j < allReservations.Count; j++)
-                {
-                    if (this.isDateInRange(normalCustomers[i].StartDate, allReservations[j].StartDate, allReservations[j].EndDate))
-                    {
-                        isValid = false;
-                        normalCustomers[i].status = ReservationStatus.AppointmentAlreadyTaken;
-                        break;
-                    }
-                    else if (this.isDateInRange(normalCustomers[i].EndDate, allReservations[j].StartDate, allReservations[j].EndDate))
-                    {
-                        isValid = false;
-                        normalCustomers[i].status = ReservationStatus.AppointmentAlreadyTaken;
-                        break;
-                    }
-                }
-                if (isValid)
-                {
-                    normalCustomers[i].status = ReservationStatus.Success;
-                    normalCustomers[i].customer.cashAssets = normalCustomers[i].customer.cashAssets - normalCustomers[i].price;
-                }
-                allReservations.Add(normalCustomers[i]);
-            }
-            return allReservations.Skip(numberOfOldReservations).ToList();
         }
 
         private bool isDateInRange(DateTime date, DateTime range1, DateTime range2)

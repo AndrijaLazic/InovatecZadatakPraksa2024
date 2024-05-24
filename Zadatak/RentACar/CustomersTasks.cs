@@ -31,11 +31,13 @@ namespace AutoPlac
 
         private static Task GetWork(Customer customers, List<dynamic> reservations, VehicleService vehicleService)
         {
+            
             Random rnd = new Random();
             return Task.Run(async () =>
             {
-                await Task.Delay(rnd.Next(0, 2) * 1000);
-                for(int i=0;i< reservations.Count;i++)
+                List<Exception> listOfExceptions= new List<Exception>();
+                //await Task.Delay(rnd.Next(0, 2) * 1000);
+                for (int i=0;i< reservations.Count;i++)
                 {
                     Reservation currentUserReservation = new Reservation()
                     {
@@ -44,8 +46,18 @@ namespace AutoPlac
                         StartDate = DateTime.Parse(reservations[i].PocetakRezervacije),
                         timeOfOrder = DateTime.Parse(reservations[i].DatumDolaska)
                     };
-                    vehicleService.RentVehicle(currentUserReservation, int.Parse(reservations[i].VoziloId));
+                    try
+                    {
+                        vehicleService.RentVehicle(currentUserReservation, int.Parse(reservations[i].VoziloId));
+                    }
+                    catch(Exception ex)
+                    {
+                        listOfExceptions.Add(ex);
+                    }
                 }
+                
+                if(listOfExceptions.Count > 0)
+                    throw new AggregateException(listOfExceptions);
             });
         }
     }

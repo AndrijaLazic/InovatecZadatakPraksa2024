@@ -10,6 +10,7 @@ namespace DOMAIN.Enums
     {
         AppointmentAlreadyTaken,
         Success,
+        NotEnoughCashAssets,
         Undefined
     }
 }

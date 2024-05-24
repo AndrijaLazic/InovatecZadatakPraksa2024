@@ -16,7 +16,7 @@ namespace TestProject.DAL_test
         public CSVModule csvModule;
         public CSVModuleTest()
         {
-            string text = File.ReadAllText(@"./AppConfig.json");
+            string text = File.ReadAllText(@"./AppConfigDev.json");
             this.appConfig = JsonSerializer.Deserialize<AppConfig>(text)!;
             this.csvConfiguration = new CsvConfiguration(CultureInfo.InvariantCulture)
             {

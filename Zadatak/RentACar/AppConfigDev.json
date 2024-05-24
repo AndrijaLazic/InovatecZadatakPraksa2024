@@ -1,0 +1,12 @@
+﻿{
+  "csvConfig": {
+    "Delimiter": ",",
+    "fileDirectory": "C:\\Users\\kebab\\Desktop\\faks\\Praksa 2024 - zadatak\\TestData",
+    "fileNameVehicles": "vozila.csv",
+    "fileNameEquipment": "oprema.csv",
+    "fileNameVehicleEquipment": "vozilo_oprema.csv",
+    "fileNameNewCustomersReservations": "zahtevi_za_rezervacije.csv",
+    "fileNameOldCustomersReservations": "rezervacije.csv",
+    "fileNameCustomers": "kupci.csv"
+  }
+}

@@ -143,7 +143,7 @@ namespace BLL.Services
             decimal realPrice = wantedVehicle.GetTotalPrice() * reservation.customer.GetDiscount();
             
             if (realPrice > reservation.customer.cashAssets)
-                throw new Exception("User:" + reservation.customer.name +" "+ reservation.customer.lastName + " doesn`t have enought cash assets(" + reservation.customer.cashAssets + "/" + realPrice + ")");
+                throw new Exception("User:" + reservation.customer.name +" "+ reservation.customer.lastName + " doesn`t have enought cash assets(" + reservation.customer.cashAssets + "/" + realPrice + ") for vehicle:"+vehicleID);
 
             reservation.price=realPrice;
 

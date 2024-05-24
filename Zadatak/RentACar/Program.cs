@@ -70,11 +70,13 @@ try
 }
 catch (AggregateException ex)
 {
+    //https://stackoverflow.com/questions/12007781/why-doesnt-await-on-task-whenall-throw-an-aggregateexception
     if (ex.InnerExceptions.Count == 0)
         throw;
-    foreach (var innerEx in ex.InnerExceptions)
+    foreach (AggregateException taskExs in ex.InnerExceptions)
     {
-        logger.Error(innerEx.Message);
+        foreach (var singleEx in taskExs.InnerExceptions)
+            logger.Error(singleEx.Message);
     }
 }
 catch (Exception ex)
@@ -90,18 +92,24 @@ List<IVehicle> vehicles = vehicleService.GetVehicles();
 
 for (int i = 0; i < vehicles.Count; i++)
 {
-    List<Reservation> allReservations = vehicles[i].reservation.getReservations();
-    for (int j = 0; j < allReservations.Count; j++)
+    if (vehicles[i].id == 4)
     {
-        if (allReservations[j].status == ReservationStatus.Success)
-        {
-            successfullReservations.Add(ReservationToWrite.ConvertReservation(allReservations[j], vehicles[i].id));
-            continue;
-        }
-        if (allReservations[j].status == ReservationStatus.AppointmentAlreadyTaken)
-        {
-            logger.Error("User: " + allReservations[j].customer.name + " " + allReservations[j].customer.lastName + " failed to reserve the vehicle because it has already been reserved for the given period.");
-        }
+
+    }
+    vehicles[i].reservation.getReservations(out List<Reservation> validReservations, out List<Reservation> invalidReservations);
+    for (int j = 0; j < validReservations.Count; j++)
+    {
+        successfullReservations.Add(ReservationToWrite.ConvertReservation(validReservations[j], vehicles[i].id));
+    }
+    for (int j = 0;j < invalidReservations.Count; j++)
+    {
+        if (invalidReservations[j].status == ReservationStatus.AppointmentAlreadyTaken)
+            logger.Error("User: " + invalidReservations[j].customer.name + " " + invalidReservations[j].customer.lastName + 
+                " failed to reserve the vehicle:" + vehicles[i].id +" because it has already been reserved for the given period.");
+        else if(invalidReservations[j].status == ReservationStatus.NotEnoughCashAssets)
+            logger.Error("User: " + invalidReservations[j].customer.name + " " + invalidReservations[j].customer.lastName + 
+                " failed to reserve the vehicle:" + vehicles[i].id + " because there is not enough cash assets in customers account.("
+                + invalidReservations[j].customer.cashAssets+"/"+invalidReservations[j].price+ ")");
     }
 }
 
@@ -111,8 +119,8 @@ for (int i = 0; i < vehicles.Count; i++)
 
 
 module.WriteFile("nove_rezervacije.csv", successfullReservations);
-module.WriteFile("kupci.csv", customers);
-
+/*module.WriteFile("kupci.csv", customers);
+*/
 
 logger.Information("\n\n\nEnded simulation:\n\n");
 

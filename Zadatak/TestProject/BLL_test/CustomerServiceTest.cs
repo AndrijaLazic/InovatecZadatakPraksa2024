@@ -25,7 +25,7 @@ namespace TestProject.BLL_test
         public void GetCustomers_returnsListOfCustomers()
         {
             List<Customer> customers = _customerService.GetCustomers();
-            customers.Should().HaveCount(9);
+            customers.Should().HaveCount(10);
         }
     }
 }
