@@ -32,7 +32,7 @@ namespace DOMAIN.Models
                     case MembershipType.Basic:
                         for (int i = 0; i < currentReservations.Count; i++)
                         {
-                            if (currentReservations[i].customer.membershipType == MembershipType.VIP || currentReservations[i].customer.membershipType == MembershipType.Basic)
+                            if (currentReservations[i].customer.membershipType != MembershipType.None)
                                 continue;
                             currentReservations.Insert(i, reservation);
                             return;
@@ -66,7 +66,14 @@ namespace DOMAIN.Models
 
                 for (int j = 0; j < reservationsForCurrentDate!.Count; j++)
                 {
+                    dynamic cashAssetsAftherTransaction = reservationsForCurrentDate[j].customer.cashAssets - reservationsForCurrentDate[j].price;
 
+                    if (cashAssetsAftherTransaction < 0)
+                    {
+                        reservationsForCurrentDate[j].status = ReservationStatus.NotEnoughCashAssets;
+                        invalidNewReservations.Add(reservationsForCurrentDate[j]);
+                        continue;
+                    }
 
                     bool isValid = true;
                     for (int z = 0; z < oldReservations.Count; z++)
@@ -112,15 +119,7 @@ namespace DOMAIN.Models
                     {
                         invalidNewReservations.Add(reservationsForCurrentDate[j]);
                         continue;
-                    }
-                    dynamic cashAssetsAftherTransaction = reservationsForCurrentDate[j].customer.cashAssets - reservationsForCurrentDate[j].price;
-
-                    if (cashAssetsAftherTransaction < 0)
-                    {
-                        reservationsForCurrentDate[j].status = ReservationStatus.NotEnoughCashAssets;
-                        invalidNewReservations.Add(reservationsForCurrentDate[j]);
-                        continue;
-                    }
+                    }                 
 
                     reservationsForCurrentDate[j].status = ReservationStatus.Success;
                     reservationsForCurrentDate[j].customer.cashAssets = cashAssetsAftherTransaction;
