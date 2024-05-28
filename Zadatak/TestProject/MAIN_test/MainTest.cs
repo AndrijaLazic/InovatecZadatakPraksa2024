@@ -96,12 +96,13 @@ namespace TestProject.MAIN_test
                         validReservations.Where(x => x.status == ReservationStatus.Success).Count().Should().Be(2);
                         break;
                     case 4:
-                        validReservations.Where(x => x.status == ReservationStatus.Success).Count().Should().Be(3);
-                        _customerService.GetCustomerById(8).cashAssets.Should().Be(cashAssetsUser8 - validReservations.Where(x => x.customer.id == 8).First().price);
-                        break;
-                    case 6:
-                        validReservations.Count().Should().Be(1);
-                        _customerService.GetCustomerById(7).cashAssets.Should().Be(cashAssetsUser7 - validReservations.Where(x => x.customer.id == 7).First().price);
+                        validReservations.Where(x => x.status == ReservationStatus.Success).Count().Should().Be(5);
+                        List<Reservation> usersValidReservations= validReservations.Where(x => x.customer.id == 8).ToList();
+                        usersValidReservations.ForEach(x =>
+                        {
+                            cashAssetsUser8= cashAssetsUser8-x.price;
+                        });
+                        _customerService.GetCustomerById(8).cashAssets.Should().Be(cashAssetsUser8);
                         break;
                     default:
                         // code block
@@ -121,7 +122,7 @@ namespace TestProject.MAIN_test
             List<Reservation> reservations = new List<Reservation>();
             List<dynamic> readReservations = _csvModule.ReadFile("nove_rezervacije.csv");
 
-            readReservations.Count.Should().Be(9);
+            readReservations.Count.Should().Be(11);
         }
     }
 }

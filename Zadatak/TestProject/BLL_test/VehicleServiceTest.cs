@@ -48,6 +48,33 @@ namespace TestProject.BLL_test
             ((Car)vehicles.Where(x => x.id == 6).First()).priceOfEquipment.Should().Be(30m);
         }
 
-        
+        [Fact]
+        public void CheckMembershipValidity()
+        {
+            IVehicle vehicle = _vehicleService.GetVehicles().Where(x => x.id == 4).First();
+            List<dynamic> customersReservations = _vehicleService.GetNewCustomersReservations().Where(x => int.Parse(x.VoziloId) == 4 && "06-03-2024".Equals(x.DatumDolaska)).ToList();
+            for (int i = 0; i < customersReservations.Count; i++)
+            {
+                Customer currentCustomer = _customerService.GetCustomerById(int.Parse(customersReservations[i].KupacId));
+
+                Reservation reservation = new Reservation()
+                {
+                    timeOfOrder = DateTime.Parse(customersReservations[i].DatumDolaska),
+                    customer = currentCustomer,
+                    EndDate = DateTime.Parse(customersReservations[i].KrajRezervacije),
+                    StartDate = DateTime.Parse(customersReservations[i].PocetakRezervacije)
+                };
+
+                _vehicleService.RentVehicle(reservation, vehicle.id);
+            }
+            vehicle.reservation.getReservations(out List<Reservation> valid, out List<Reservation> invalid);
+            valid.Should().HaveCount(2);
+            invalid.Should().HaveCount(2);
+            valid[0].customer.id.Should().Be(7);
+            valid[1].customer.id.Should().Be(9);
+            valid[1].StartDate.ToString("dd-MM-yyyy").Should().Contain("17-07-2028");
+
+
+        }
     }
 }

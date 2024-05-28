@@ -115,8 +115,6 @@ for (int i = 0; i < vehicles.Count; i++)
 
 
 module.WriteFile("nove_rezervacije.csv", successfullReservations);
-/*module.WriteFile("kupci.csv", customers);
-*/
 
 logger.Information("\n\n\nEnded simulation:\n\n");
 

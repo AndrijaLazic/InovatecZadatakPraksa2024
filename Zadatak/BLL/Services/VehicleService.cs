@@ -100,7 +100,6 @@ namespace BLL.Services
             for (int i = 0; i < readVehicles.Count; i++)
             {
                 IVehicle newVehicle = _vehicleFactory.GetVehicle(readVehicles[i]);
-                newVehicle.GetTotalPrice();
                 _vehicles.TryAdd(newVehicle.id, newVehicle!);
             }
         }
