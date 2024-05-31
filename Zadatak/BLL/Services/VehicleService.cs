@@ -138,8 +138,7 @@ namespace BLL.Services
             _vehicles.TryGetValue(vehicleID, out IVehicle? wantedVehicle);
             if (wantedVehicle == null)
                 throw new Exception("Vehicle with id:" + vehicleID + " doesn`t exist");
-
-            decimal realPrice = wantedVehicle.GetTotalPrice() * reservation.customer.GetDiscount();
+            decimal realPrice = wantedVehicle.GetTotalPrice() * reservation.customer.GetDiscount() * (reservation.EndDate - reservation.StartDate).Days;
             
             if (realPrice > reservation.customer.cashAssets)
                 throw new Exception("User:" + reservation.customer.name +" "+ reservation.customer.lastName + " doesn`t have enought cash assets(" + reservation.customer.cashAssets + "/" + realPrice + ") for vehicle:"+vehicleID);
@@ -184,8 +183,6 @@ namespace BLL.Services
 
         private void LoadOldReservationsIntoVehicles()
         {
-            List<Customer> customers = _customerService.GetCustomers();
-
             for (int i = 0; i < oldReservationsCSV.Count; i++)
             {
                 Customer customer = _customerService.GetCustomerById(int.Parse(oldReservationsCSV[i].KupacId));

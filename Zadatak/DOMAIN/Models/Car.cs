@@ -22,7 +22,15 @@ namespace DOMAIN.Models
 
         public override string ToString()
         {
-            return base.ToString() + " price:"+ GetTotalPrice() + " kmsDriven:" + this.kmsDriven + " carBodyType:" + this.carBodyType.ToString();
+            string equipmentString = "equipment:\n";
+
+            if(equipment.Count==0)
+                return base.ToString() + " price:" + GetTotalPrice() + " kmsDriven:" + this.kmsDriven + " carBodyType:" + this.carBodyType.ToString();
+            for (int i = 0; i < equipment.Count; i++)
+            {
+                equipmentString = "\n\t"+ equipmentString + "name:" + equipment[i].name + " price:" + equipment[i].price + " increasesPrice:" + equipment[i].increasesPrice;
+            }
+            return base.ToString() + " price:"+ GetTotalPrice() + " kmsDriven:" + this.kmsDriven + " carBodyType:" + this.carBodyType.ToString()+" "+equipmentString;
         }
     }
 }

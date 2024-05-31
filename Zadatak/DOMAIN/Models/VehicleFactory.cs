@@ -16,7 +16,6 @@ namespace DOMAIN.Models
     {
         public IVehicle GetVehicle(dynamic data)
         {
-            var dict = (IDictionary<string, object>)data; 
             try
             {
                 switch (data.TipVozila)
