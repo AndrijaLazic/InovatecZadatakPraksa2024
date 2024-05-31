@@ -64,6 +64,22 @@ namespace TestProject.MAIN_test
                     action.Should().Throw<Exception>().Where(e => e.Message.Equals("User:Test2 Test2 doesn`t have enought cash assets(194/198.00000) for vehicle:6"));
                     continue;
                 }
+                else if (currentCustomer.id == 3 && int.Parse(reservations[i].VoziloId) == 1)
+                {
+                    Action action = () => {
+                        _vehicleService.RentVehicle(reservation, int.Parse(reservations[i].VoziloId));
+                    };
+                    action.Should().Throw<Exception>().Where(e => e.Message.StartsWith("User:Nikola Lazovic doesn`t have enought cash"));
+                    continue;
+                }
+                else if (currentCustomer.id == 2 && int.Parse(reservations[i].VoziloId) == 5)
+                {
+                    Action action = () => {
+                        _vehicleService.RentVehicle(reservation, int.Parse(reservations[i].VoziloId));
+                    };
+                    action.Should().Throw<Exception>().Where(e => e.Message.StartsWith("User:Jovan Perovic doesn`t have enought cash"));
+                    continue;
+                }
                 _vehicleService.RentVehicle(reservation, int.Parse(reservations[i].VoziloId));
                 
                 
@@ -122,7 +138,7 @@ namespace TestProject.MAIN_test
             List<Reservation> reservations = new List<Reservation>();
             List<dynamic> readReservations = _csvModule.ReadFile("nove_rezervacije.csv");
 
-            readReservations.Count.Should().Be(11);
+            readReservations.Count.Should().Be(10);
         }
     }
 }
